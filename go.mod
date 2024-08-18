@@ -1,4 +1,4 @@
-module draw-lots-backend
+module github.com/we-we-Web/draw-lots-backend
 
 go 1.22.1
 
