@@ -53,9 +53,13 @@ func (service *Service) GetAdmin(c *gin.Context) {
 }
 
 func (service *Service) GetSenior(c *gin.Context) {
-
+	id := c.Param("id")
+	senior := service.seniorRepo.GetSenior(id)
+	c.JSON(http.StatusOK, senior)
 }
 
 func (service *Service) GetJunior(c *gin.Context) {
-
+	id := c.Param("id")
+	junior := service.juniorRepo.GetJunior(id)
+	c.JSON(http.StatusOK, junior)
 }
