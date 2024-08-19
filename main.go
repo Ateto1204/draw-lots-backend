@@ -17,12 +17,12 @@ func main() {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	db.AutoMigrate(&model.Admin{})
+	db.AutoMigrate(&model.Admin{}, &model.Senior{}, &model.Junior{})
 	fmt.Println("Database connected successfully!")
 
 	adminRepo := repository.NewAdminRepo(db)
-	seniorRepo := &repository.SeniorRepository{}
-	juniorRepo := &repository.JuniorRepository{}
+	seniorRepo := repository.NewSeniorRepo(db)
+	juniorRepo := repository.NewJuniorRepo(db)
 	service := service.NewService(adminRepo, seniorRepo, juniorRepo)
 
 	router := SetUpRouter(service)
