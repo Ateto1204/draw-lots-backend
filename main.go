@@ -20,7 +20,7 @@ func main() {
 	db.AutoMigrate(&model.Admin{})
 	fmt.Println("Database connected successfully!")
 
-	adminRepo := repository.NewAdminRepository(db)
+	adminRepo := repository.NewAdminRepo(db)
 	seniorRepo := &repository.SeniorRepository{}
 	juniorRepo := &repository.JuniorRepository{}
 	service := service.NewService(adminRepo, seniorRepo, juniorRepo)
@@ -32,8 +32,14 @@ func main() {
 func SetUpRouter(service *service.Service) *gin.Engine {
 	router := gin.Default()
 
-	router.POST("/admin", service.CreateAdmin)
-	router.GET("/admin/:id", service.GetAdmin)
+	router.POST("/api/admin", service.CreateAdmin)
+	router.GET("/api/admin/:id", service.GetAdmin)
+
+	router.POST("/api/senior", service.CreateSenior)
+	router.GET("/api/senior/:id", service.GetSenior)
+
+	router.POST("/api/junior", service.CreateJunior)
+	router.GET("/api/junior/:id", service.GetJunior)
 
 	return router
 }

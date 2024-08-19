@@ -51,3 +51,11 @@ func (service *Service) GetAdmin(c *gin.Context) {
 	admin := service.adminRepo.GetAdmin(id)
 	c.JSON(http.StatusOK, admin)
 }
+
+func (service *Service) GetSenior(c *gin.Context) {
+
+}
+
+func (service *Service) GetJunior(c *gin.Context) {
+
+}
