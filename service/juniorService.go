@@ -43,7 +43,7 @@ func (service *Service) GetJunior(c *gin.Context) {
 	c.JSON(http.StatusOK, junior)
 }
 
-func (service *Service) AddSeniorIdToJunior(c *gin.Context) {
+func (service *Service) AddParentIdToJunior(c *gin.Context) {
 	id := c.Param("id")
 
 	junior, err := service.juniorRepo.GetJunior(id)
@@ -62,7 +62,33 @@ func (service *Service) AddSeniorIdToJunior(c *gin.Context) {
 	}
 
 	junior.ParentId = seniorId.Id
-	if err := service.juniorRepo.UpdateJunior(junior); err != nil {
+	if err := service.juniorRepo.UpdateParentId(junior); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error:": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, junior)
+}
+
+func (service *Service) AddLineIdToJunior(c *gin.Context) {
+	id := c.Param("id")
+
+	junior, err := service.juniorRepo.GetJunior(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error:": err.Error()})
+		return
+	}
+
+	type LineId struct {
+		Id string `json:"id"`
+	}
+	var lineId LineId
+	if err := c.ShouldBindJSON(&lineId); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error:": err.Error()})
+		return
+	}
+
+	junior.LineId = lineId.Id
+	if err := service.juniorRepo.UpdateLineId(junior); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error:": err.Error()})
 		return
 	}
