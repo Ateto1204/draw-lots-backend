@@ -20,6 +20,14 @@ func (repo *JuniorRepository) CreateJunior(junior *model.Junior) error {
 	return nil
 }
 
+func (repo *JuniorRepository) GetAllJuniors() (*[]model.Junior, error) {
+	var juniors []model.Junior
+	if err := repo.Database.Find(&juniors).Error; err != nil {
+		return nil, err
+	}
+	return &juniors, nil
+}
+
 func (repo *JuniorRepository) GetJunior(id string) (*model.Junior, error) {
 	var junior model.Junior
 

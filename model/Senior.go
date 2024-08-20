@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"errors"
 )
 
 type Senior struct {
@@ -11,7 +12,7 @@ type Senior struct {
 	Class         string      `json:"class"`
 	LineId        string      `json:"line_id"`
 	Quota         int         `json:"quota"`
-	ChildrenId    StringArray `json:"children_id" gorm:"type:text" `
+	ChildrenId    StringArray `json:"children_id" gorm:"serializer:json" `
 }
 
 type StringArray []string
@@ -21,5 +22,16 @@ func (arr StringArray) Value() (driver.Value, error) {
 }
 
 func (arr *StringArray) Scan(value interface{}) error {
-	return json.Unmarshal(value.([]byte), arr)
+	var byteData []byte
+
+	switch v := value.(type) {
+	case string:
+		byteData = []byte(v)
+	case []byte:
+		byteData = v
+	default:
+		return errors.New("unsupported data type for StringArray")
+	}
+
+	return json.Unmarshal(byteData, arr)
 }

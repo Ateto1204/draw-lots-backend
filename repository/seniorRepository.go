@@ -20,6 +20,14 @@ func (repo *SeniorRepository) CreateSenior(senior *model.Senior) error {
 	return nil
 }
 
+func (repo *SeniorRepository) GetAllSeniors() (*[]model.Senior, error) {
+	var seniors []model.Senior
+	if err := repo.Database.Find(&seniors).Error; err != nil {
+		return nil, err
+	}
+	return &seniors, nil
+}
+
 func (repo *SeniorRepository) GetSenior(id string) (*model.Senior, error) {
 	var senior model.Senior
 

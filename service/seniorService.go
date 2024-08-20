@@ -24,8 +24,8 @@ func (service *Service) CreateSenior(c *gin.Context) {
 	c.JSON(http.StatusOK, senior)
 }
 
-func (service *Service) GetAllSenior(c *gin.Context) {
-	seniors, err := service.seniorRepo.GetAllSenior()
+func (service *Service) GetAllSeniors(c *gin.Context) {
+	seniors, err := service.seniorRepo.GetAllSeniors()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error:": err.Error()})
 		return

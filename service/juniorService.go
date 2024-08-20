@@ -24,8 +24,13 @@ func (service *Service) CreateJunior(c *gin.Context) {
 	c.JSON(http.StatusOK, junior)
 }
 
-func (service *Service) GetAllJunior(c *gin.Context) {
-
+func (service *Service) GetAllJuniors(c *gin.Context) {
+	juniors, err := service.juniorRepo.GetAllJuniors()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, juniors)
 }
 
 func (service *Service) GetJunior(c *gin.Context) {
