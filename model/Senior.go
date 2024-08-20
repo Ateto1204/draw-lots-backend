@@ -35,3 +35,8 @@ func (arr *StringArray) Scan(value interface{}) error {
 
 	return json.Unmarshal(byteData, arr)
 }
+
+func (arr StringArray) Append(value string) *StringArray {
+	arr = append(arr, value)
+	return &arr
+}
