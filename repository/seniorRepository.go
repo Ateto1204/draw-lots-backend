@@ -36,3 +36,10 @@ func (repo *SeniorRepository) GetSenior(id string) (*model.Senior, error) {
 	}
 	return &senior, nil
 }
+
+func (repo *SeniorRepository) UpdateChildId(senior *model.Senior) error {
+	if err := repo.Database.Save(senior).Error; err != nil {
+		return err
+	}
+	return nil
+}

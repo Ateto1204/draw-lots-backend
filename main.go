@@ -62,10 +62,13 @@ func SetUpRouter(s *service.Service) *gin.Engine {
 	router.POST("/api/senior", s.CreateSenior)
 	router.GET("api/seniors", s.GetAllSeniors)
 	router.GET("/api/senior/:id", s.GetSenior)
+	router.PUT("/api/senior/partner/:id", s.AddChildIdToSenior)
 
 	router.POST("/api/junior", s.CreateJunior)
 	router.GET("/api/juniors", s.GetAllJuniors)
 	router.GET("/api/junior/:id", s.GetJunior)
+	router.PUT("/api/junior/partner/:id", s.AddParentIdToJunior)
+	router.PUT("/api/junior/line/:id", s.AddLineIdToJunior)
 
 	return router
 }
