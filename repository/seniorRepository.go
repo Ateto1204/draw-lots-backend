@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"fmt"
-
 	"github.com/we-we-Web/draw-lots-backend/model"
 	"gorm.io/gorm"
 )
@@ -22,13 +20,11 @@ func (repo *SeniorRepository) CreateSenior(senior *model.Senior) error {
 	return nil
 }
 
-func (repo *SeniorRepository) GetSenior(id string) *model.Senior {
+func (repo *SeniorRepository) GetSenior(id string) (*model.Senior, error) {
 	var senior model.Senior
 
 	if err := repo.Database.First(&senior, "student_number = ?", id).Error; err != nil {
-		fmt.Println("Error:", err)
-	} else {
-		fmt.Println("Junior found:", senior)
+		return nil, err
 	}
-	return &senior
+	return &senior, nil
 }

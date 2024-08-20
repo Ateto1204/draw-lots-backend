@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"fmt"
-
 	"github.com/we-we-Web/draw-lots-backend/model"
 	"gorm.io/gorm"
 )
@@ -22,13 +20,11 @@ func (repo *AdminRepository) CreateAdmin(admin *model.Admin) error {
 	return nil
 }
 
-func (repo *AdminRepository) GetAdmin(id string) *model.Admin {
+func (repo *AdminRepository) GetAdmin(id string) (*model.Admin, error) {
 	var admin model.Admin
 
 	if err := repo.Database.First(&admin, "student_number = ?", id).Error; err != nil {
-		fmt.Println("Error:", err)
-	} else {
-		fmt.Println("Admin found:", admin)
+		return nil, err
 	}
-	return &admin
+	return &admin, nil
 }
