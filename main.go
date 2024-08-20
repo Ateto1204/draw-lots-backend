@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -13,6 +14,8 @@ import (
 )
 
 func main() {
+	// godotenv.Load()
+
 	dsn := os.Getenv("POSTGRES_URI")
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -41,16 +44,27 @@ func main() {
 func SetUpRouter(s *service.Service) *gin.Engine {
 	router := gin.Default()
 
-	router.GET("/", service.Home)
-	router.GET("/api", service.Api)
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, "NTOUCSE113")
+	})
+	router.GET("/api", func(c *gin.Context) {
+		type Option struct {
+			Admin  string
+			Senior string
+			Junior string
+		}
+		c.JSON(http.StatusOK, &Option{})
+	})
 
 	router.POST("/api/admin", s.CreateAdmin)
 	router.GET("/api/admin/:id", s.GetAdmin)
 
 	router.POST("/api/senior", s.CreateSenior)
+	router.GET("api/seniors", s.GetAllSeniors)
 	router.GET("/api/senior/:id", s.GetSenior)
 
 	router.POST("/api/junior", s.CreateJunior)
+	router.GET("/api/juniors", s.GetAllJuniors)
 	router.GET("/api/junior/:id", s.GetJunior)
 
 	return router
