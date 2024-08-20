@@ -44,6 +44,10 @@ func (service *Service) CreateAdmin(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	if user, _ := service.adminRepo.GetAdmin(admin.StudentNumber); user != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "User already exists"})
+		return
+	}
 	if err := service.adminRepo.CreateAdmin(&admin); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -55,6 +59,10 @@ func (service *Service) CreateSenior(c *gin.Context) {
 	var senior model.Senior
 	if err := c.ShouldBindJSON(&senior); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if user, _ := service.seniorRepo.GetSenior(senior.StudentNumber); user != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "User already exists"})
 		return
 	}
 	if err := service.seniorRepo.CreateSenior(&senior); err != nil {
@@ -70,6 +78,10 @@ func (service *Service) CreateJunior(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	if user, _ := service.juniorRepo.GetJunior(junior.StudentNumber); user != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "User already exists"})
+		return
+	}
 	if err := service.juniorRepo.CreateJunior(&junior); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -79,18 +91,30 @@ func (service *Service) CreateJunior(c *gin.Context) {
 
 func (service *Service) GetAdmin(c *gin.Context) {
 	id := c.Param("id")
-	admin := service.adminRepo.GetAdmin(id)
+	admin, err := service.adminRepo.GetAdmin(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, admin)
 }
 
 func (service *Service) GetSenior(c *gin.Context) {
 	id := c.Param("id")
-	senior := service.seniorRepo.GetSenior(id)
+	senior, err := service.seniorRepo.GetSenior(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, senior)
 }
 
 func (service *Service) GetJunior(c *gin.Context) {
 	id := c.Param("id")
-	junior := service.juniorRepo.GetJunior(id)
+	junior, err := service.juniorRepo.GetJunior(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, junior)
 }
