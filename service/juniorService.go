@@ -44,5 +44,27 @@ func (service *Service) GetJunior(c *gin.Context) {
 }
 
 func (service *Service) AddSeniorIdToJunior(c *gin.Context) {
+	id := c.Param("id")
 
+	junior, err := service.juniorRepo.GetJunior(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	type SeniorId struct {
+		Id string `json:"id"`
+	}
+	var seniorId SeniorId
+	if err := c.ShouldBindJSON(&seniorId); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error:": err.Error()})
+		return
+	}
+
+	junior.ParentId = seniorId.Id
+	if err := service.juniorRepo.UpdateJunior(junior); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error:": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, junior)
 }

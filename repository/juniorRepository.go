@@ -36,3 +36,10 @@ func (repo *JuniorRepository) GetJunior(id string) (*model.Junior, error) {
 	}
 	return &junior, nil
 }
+
+func (repo *JuniorRepository) UpdateJunior(junior *model.Junior) error {
+	if err := repo.Database.Save(junior).Error; err != nil {
+		return err
+	}
+	return nil
+}
