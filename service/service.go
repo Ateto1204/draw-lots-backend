@@ -25,6 +25,19 @@ func NewService(adminRepo *repository.AdminRepository,
 	}
 }
 
+func Home(c *gin.Context) {
+	c.JSON(http.StatusOK, "NTOUCSE113")
+}
+
+func Api(c *gin.Context) {
+	type Option struct {
+		Admin  string
+		Senior string
+		Junior string
+	}
+	c.JSON(http.StatusOK, &Option{})
+}
+
 func (service *Service) CreateAdmin(c *gin.Context) {
 	var admin model.Admin
 	if err := c.ShouldBindJSON(&admin); err != nil {

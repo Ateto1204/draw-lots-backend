@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/we-we-Web/draw-lots-backend/model"
 	"github.com/we-we-Web/draw-lots-backend/repository"
 	"github.com/we-we-Web/draw-lots-backend/service"
@@ -15,46 +13,45 @@ import (
 )
 
 func main() {
-	godotenv.Load()
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s",
-		os.Getenv("POSTGRES_HOST"),
-		os.Getenv("POSTGRES_USER"),
-		os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("POSTGRES_DB"),
-		os.Getenv("POSTGRES_PORT"),
-	)
-	log.Println(dsn)
+	dsn := os.Getenv("POSTGRES_URI")
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
+	} else {
+		log.Println("Opened database successfully")
 	}
 	if err := db.AutoMigrate(&model.Admin{}, &model.Senior{}, &model.Junior{}); err != nil {
 		log.Fatalf("AutoMigrate failed: %v", err)
+	} else {
+		log.Println("Migrated database successfully")
 	}
 
 	adminRepo := repository.NewAdminRepo(db)
 	seniorRepo := repository.NewSeniorRepo(db)
 	juniorRepo := repository.NewJuniorRepo(db)
-	service := service.NewService(adminRepo, seniorRepo, juniorRepo)
+	s := service.NewService(adminRepo, seniorRepo, juniorRepo)
 
-	router := SetUpRouter(service)
+	router := SetUpRouter(s)
 	err = router.Run(":8080")
 	if err != nil {
 		log.Fatalf("failed to start server: %v", err)
 	}
 }
 
-func SetUpRouter(service *service.Service) *gin.Engine {
+func SetUpRouter(s *service.Service) *gin.Engine {
 	router := gin.Default()
 
-	router.POST("/api/admin", service.CreateAdmin)
-	router.GET("/api/admin/:id", service.GetAdmin)
+	router.GET("/", service.Home)
+	router.GET("/api", service.Api)
 
-	router.POST("/api/senior", service.CreateSenior)
-	router.GET("/api/senior/:id", service.GetSenior)
+	router.POST("/api/admin", s.CreateAdmin)
+	router.GET("/api/admin/:id", s.GetAdmin)
 
-	router.POST("/api/junior", service.CreateJunior)
-	router.GET("/api/junior/:id", service.GetJunior)
+	router.POST("/api/senior", s.CreateSenior)
+	router.GET("/api/senior/:id", s.GetSenior)
+
+	router.POST("/api/junior", s.CreateJunior)
+	router.GET("/api/junior/:id", s.GetJunior)
 
 	return router
 }
