@@ -24,12 +24,10 @@ func (service *Service) CreateAdmin(c *gin.Context) {
 	c.JSON(http.StatusOK, admin)
 }
 
-func (service *Service) GetAdmin(c *gin.Context) {
-	id := c.Param("id")
+func (service *Service) GetAdmin(id string) (*model.Admin, error) {
 	admin, err := service.adminRepo.GetAdmin(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
-	c.JSON(http.StatusOK, admin)
+	return admin, nil
 }
