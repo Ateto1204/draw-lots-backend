@@ -1,6 +1,9 @@
 package service
 
 import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 	"github.com/we-we-Web/draw-lots-backend/repository"
 )
 
@@ -19,4 +22,43 @@ func NewService(adminRepo *repository.AdminRepository,
 		seniorRepo: seniorRepo,
 		juniorRepo: juniorRepo,
 	}
+}
+
+func (service *Service) Login(c *gin.Context) {
+	type Login struct {
+		Identity string `json:"identity"`
+		Id       string `json:"id"`
+	}
+	var request Login
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error:": err.Error()})
+		return
+	}
+	switch request.Identity {
+	case "admin":
+		response, err := service.GetAdmin(request.Id)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error:": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, response)
+		return
+	case "senior":
+		response, err := service.GetSenior(request.Id)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error:": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, response)
+		return
+	case "junior":
+		response, err := service.GetJunior(request.Id)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error:": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, response)
+		return
+	}
+	c.JSON(http.StatusBadRequest, gin.H{"error:": "Invalid identity"})
 }
