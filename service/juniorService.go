@@ -10,7 +10,7 @@ import (
 func (service *Service) CreateJunior(c *gin.Context) {
 	var junior model.Junior
 	if err := c.ShouldBindJSON(&junior); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error:": err.Error()})
 		return
 	}
 	if user, _ := service.juniorRepo.GetJunior(junior.StudentNumber); user != nil {
@@ -18,7 +18,7 @@ func (service *Service) CreateJunior(c *gin.Context) {
 		return
 	}
 	if err := service.juniorRepo.CreateJunior(&junior); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error:": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, junior)
@@ -27,20 +27,18 @@ func (service *Service) CreateJunior(c *gin.Context) {
 func (service *Service) GetAllJuniors(c *gin.Context) {
 	juniors, err := service.juniorRepo.GetAllJuniors()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error:": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, juniors)
 }
 
-func (service *Service) GetJunior(c *gin.Context) {
-	id := c.Param("id")
+func (service *Service) GetJunior(id string) (*model.Junior, error) {
 	junior, err := service.juniorRepo.GetJunior(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
-	c.JSON(http.StatusOK, junior)
+	return junior, nil
 }
 
 func (service *Service) AddParentIdToJunior(c *gin.Context) {
