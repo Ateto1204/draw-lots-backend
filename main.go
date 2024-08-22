@@ -32,7 +32,7 @@ func main() {
 	juniorRepo := repository.NewJuniorRepo(db)
 	s := service.NewService(adminRepo, seniorRepo, juniorRepo)
 
-	router := SetUpRouter(s)
+	router := service.SetUpRouter(s)
 	err = router.Run(":8080")
 	if err != nil {
 		log.Fatalf("failed to start server: %v", err)
