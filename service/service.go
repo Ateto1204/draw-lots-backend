@@ -31,14 +31,14 @@ func (service *Service) Login(c *gin.Context) {
 	}
 	var request Login
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error:": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	switch request.Identity {
 	case "admin":
 		response, err := service.GetAdmin(request.Id)
 		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error:": err.Error()})
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
 		c.JSON(http.StatusOK, response)
@@ -46,7 +46,7 @@ func (service *Service) Login(c *gin.Context) {
 	case "senior":
 		response, err := service.GetSenior(request.Id)
 		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error:": err.Error()})
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
 		c.JSON(http.StatusOK, response)
@@ -54,11 +54,32 @@ func (service *Service) Login(c *gin.Context) {
 	case "junior":
 		response, err := service.GetJunior(request.Id)
 		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error:": err.Error()})
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
 		c.JSON(http.StatusOK, response)
 		return
 	}
-	c.JSON(http.StatusBadRequest, gin.H{"error:": "Invalid identity"})
+	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid identity"})
+}
+
+func (service *Service) CreateConnect(c *gin.Context) {
+	type Connect struct {
+		ParentId string `json:"parent"`
+		ChildId  string `json:"child"`
+	}
+	var input Connect
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := service.AddChildIdToSenior(input.ParentId, input.ChildId); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if err := service.AddParentIdToJunior(input.ParentId, input.ChildId); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "success"})
 }

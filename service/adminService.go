@@ -31,3 +31,13 @@ func (service *Service) GetAdmin(id string) (*model.Admin, error) {
 	}
 	return admin, nil
 }
+
+func (service *Service) GetAdminById(c *gin.Context) {
+	id := c.Param("id")
+	admin, err := service.adminRepo.GetAdmin(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, admin)
+}
