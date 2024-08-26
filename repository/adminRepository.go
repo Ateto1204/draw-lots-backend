@@ -23,7 +23,7 @@ func (repo *AdminRepository) CreateAdmin(admin *model.Admin) error {
 func (repo *AdminRepository) GetAdmin(id string) (*model.Admin, error) {
 	var admin model.Admin
 
-	if err := repo.Database.First(&admin, "student_number = ?", id).Error; err != nil {
+	if err := repo.Database.First(&admin, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return &admin, nil

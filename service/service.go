@@ -67,13 +67,13 @@ func (service *Service) Login(c *gin.Context) {
 			return
 		}
 		if request.Pwd != response.Password {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Password Incorrect"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "password incorrect"})
 			return
 		}
 		c.JSON(http.StatusOK, response)
 		return
 	}
-	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid identity"})
+	c.JSON(http.StatusBadRequest, gin.H{"error": "invalid identity"})
 }
 
 func (service *Service) CreateConnect(c *gin.Context) {
@@ -94,6 +94,28 @@ func (service *Service) CreateConnect(c *gin.Context) {
 	}
 	if err := service.AddParentIdToJunior(input.ParentId, input.ChildId, input.ChildPwd); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "success"})
+}
+
+func (service *Service) ClearConnection(c *gin.Context) {
+	type Request struct {
+		Id  string `json:"id"`
+		Pwd string `json:"pwd"`
+	}
+	var input Request
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	admin, err := service.adminRepo.GetAdmin(input.Id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	if input.Pwd != admin.Password {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "password incorrect"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "success"})

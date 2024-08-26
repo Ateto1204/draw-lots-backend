@@ -46,6 +46,10 @@ func (service *Service) GetAdminById(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
+	if input.Pwd != admin.Password {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "password incorrect"})
+		return
+	}
 	admin.Password = "secret"
 	c.JSON(http.StatusOK, admin)
 }
