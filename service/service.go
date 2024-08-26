@@ -28,6 +28,7 @@ func (service *Service) Login(c *gin.Context) {
 	type Login struct {
 		Identity string `json:"identity"`
 		Id       string `json:"id"`
+		Pwd      string `json:"pwd"`
 	}
 	var request Login
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -41,12 +42,20 @@ func (service *Service) Login(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
+		if request.Pwd != response.Password {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "password incorrect"})
+			return
+		}
 		c.JSON(http.StatusOK, response)
 		return
 	case "senior":
 		response, err := service.GetSenior(request.Id)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		if request.Pwd != response.Password {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "password incorrect"})
 			return
 		}
 		c.JSON(http.StatusOK, response)
@@ -57,6 +66,10 @@ func (service *Service) Login(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
+		if request.Pwd != response.Password {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Password Incorrect"})
+			return
+		}
 		c.JSON(http.StatusOK, response)
 		return
 	}
@@ -65,20 +78,22 @@ func (service *Service) Login(c *gin.Context) {
 
 func (service *Service) CreateConnect(c *gin.Context) {
 	type Connect struct {
-		ParentId string `json:"parent"`
-		ChildId  string `json:"child"`
+		ParentId  string `json:"parent_id"`
+		ParentPwd string `json:"parent_pwd"`
+		ChildId   string `json:"child_id"`
+		ChildPwd  string `json:"child_pwd"`
 	}
 	var input Connect
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := service.AddChildIdToSenior(input.ParentId, input.ChildId); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := service.AddChildIdToSenior(input.ParentId, input.ChildId, input.ParentPwd); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
-	if err := service.AddParentIdToJunior(input.ParentId, input.ChildId); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := service.AddParentIdToJunior(input.ParentId, input.ChildId, input.ChildPwd); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "success"})
