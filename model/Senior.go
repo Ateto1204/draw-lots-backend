@@ -9,6 +9,7 @@ import (
 type Senior struct {
 	StudentNumber string      `json:"id" gorm:"primaryKey"`
 	Name          string      `json:"name"`
+	Password      string      `json:"pwd"`
 	Class         string      `json:"class"`
 	LineId        string      `json:"line_id"`
 	Quota         int         `json:"quota"`
