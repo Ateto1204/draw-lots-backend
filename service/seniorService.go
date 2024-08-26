@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -41,10 +42,13 @@ func (service *Service) GetSenior(id string) (*model.Senior, error) {
 	return senior, nil
 }
 
-func (service *Service) AddChildIdToSenior(parentId, childId string) error {
+func (service *Service) AddChildIdToSenior(parentId, childId, pwd string) error {
 	senior, err := service.seniorRepo.GetSenior(parentId)
 	if err != nil {
 		return err
+	}
+	if pwd != senior.Password {
+		return errors.New("password incorrect")
 	}
 
 	senior.ChildrenId = *senior.ChildrenId.Append(childId)
@@ -61,5 +65,6 @@ func (service *Service) GetSeniorById(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
+	senior.Password = "secret"
 	c.JSON(http.StatusOK, senior)
 }
