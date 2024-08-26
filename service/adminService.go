@@ -33,11 +33,19 @@ func (service *Service) GetAdmin(id string) (*model.Admin, error) {
 }
 
 func (service *Service) GetAdminById(c *gin.Context) {
-	id := c.Param("id")
-	admin, err := service.adminRepo.GetAdmin(id)
+	type Request struct {
+		Id  string `json:"id"`
+		Pwd string `json:"pwd"`
+	}
+	var input Request
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+	admin, err := service.adminRepo.GetAdmin(input.Id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
+	admin.Password = "secret"
 	c.JSON(http.StatusOK, admin)
 }
