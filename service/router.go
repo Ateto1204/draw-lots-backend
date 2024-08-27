@@ -23,20 +23,22 @@ func SetUpRouter(s *Service) *gin.Engine {
 		c.JSON(http.StatusOK, &Option{})
 	})
 
-	router.POST("/api/login", s.Login)
-	router.PUT("/api/connect", s.CreateConnect)
+	router.POST("/api/login", s.Login)          // identity, id, pwd
+	router.PUT("/api/connect", s.CreateConnect) // id, pwd, parent, child
+	router.PUT("/api/clear", s.ClearConnection) // id, pwd
+
+	router.POST("/api/admin", s.GetAdminById) // id, pwd
+
+	router.GET("/api/senior/:id", s.GetSeniorById)
+	router.GET("/api/junior/:id", s.GetJuniorById)
+
+	router.PUT("/api/junior/line", s.SetLineIdToJunior) // id, pwd, line
 
 	// router.POST("/api/admin", s.CreateAdmin)
-	router.POST("/api/admin/:id", s.GetAdminById)
-
 	// router.POST("/api/senior", s.CreateSenior)
-	router.POST("api/seniors", s.GetAllSeniors)
-	router.POST("/api/senior/:id", s.GetSeniorById)
-
+	// router.POST("api/seniors", s.GetAllSeniors)
 	// router.POST("/api/junior", s.CreateJunior)
-	router.POST("/api/juniors", s.GetAllJuniors)
-	router.POST("/api/junior/:id", s.GetJuniorById)
-	router.PUT("/api/junior/line/:id", s.AddLineIdToJunior)
+	// router.POST("/api/juniors", s.GetAllJuniors)
 
 	return router
 }

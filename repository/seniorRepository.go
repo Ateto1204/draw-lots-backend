@@ -31,7 +31,7 @@ func (repo *SeniorRepository) GetAllSeniors() (*[]model.Senior, error) {
 func (repo *SeniorRepository) GetSenior(id string) (*model.Senior, error) {
 	var senior model.Senior
 
-	if err := repo.Database.First(&senior, "id = ?", id).Error; err != nil {
+	if err := repo.Database.First(&senior, "student_number = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return &senior, nil
