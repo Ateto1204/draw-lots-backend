@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/we-we-Web/draw-lots-backend/model"
 	"github.com/we-we-Web/draw-lots-backend/repository"
 )
 
@@ -67,34 +68,111 @@ func (service *Service) Login(c *gin.Context) {
 			return
 		}
 		if request.Pwd != response.Password {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Password Incorrect"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "password incorrect"})
 			return
 		}
 		c.JSON(http.StatusOK, response)
 		return
 	}
-	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid identity"})
+	c.JSON(http.StatusBadRequest, gin.H{"error": "invalid identity"})
 }
 
 func (service *Service) CreateConnect(c *gin.Context) {
 	type Connect struct {
-		ParentId  string `json:"parent_id"`
-		ParentPwd string `json:"parent_pwd"`
-		ChildId   string `json:"child_id"`
-		ChildPwd  string `json:"child_pwd"`
+		Id     string `json:"id"`
+		Pwd    string `json:"pwd"`
+		Parent string `json:"parent"`
+		Child  string `json:"child"`
 	}
 	var input Connect
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := service.AddChildIdToSenior(input.ParentId, input.ChildId, input.ParentPwd); err != nil {
+
+	// Authorized by admin
+	admin, err := service.adminRepo.GetAdmin(input.Id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	if input.Pwd != admin.Password {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "password incorrect"})
+		return
+	}
+
+	// Create connection
+	if err := service.AddChildIdToSenior(input.Parent, input.Child); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
-	if err := service.AddParentIdToJunior(input.ParentId, input.ChildId, input.ChildPwd); err != nil {
+	if err := service.AddParentIdToJunior(input.Parent, input.Child); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
+	c.JSON(http.StatusOK, gin.H{"message": "success"})
+}
+
+func (service *Service) ClearConnection(c *gin.Context) {
+	type Request struct {
+		Id  string `json:"id"`
+		Pwd string `json:"pwd"`
+	}
+	var input Request
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// Authorized by admin
+	admin, err := service.adminRepo.GetAdmin(input.Id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	if input.Pwd != admin.Password {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "password incorrect"})
+		return
+	}
+
+	// Clear seniors
+	seniors, err := service.seniorRepo.GetAllSeniors()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	seniorList := *seniors
+	for i := range seniorList {
+		seniorList[i].ChildrenId = model.StringArray{}
+	}
+
+	for _, senior := range seniorList {
+		err := service.seniorRepo.UpdateChildId(&senior)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	// Clear juniors
+	juniors, err := service.juniorRepo.GetAllJuniors()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	juniorList := *juniors
+	for i := range juniorList {
+		juniorList[i].ParentId = ""
+	}
+
+	for _, junior := range juniorList {
+		err := service.juniorRepo.UpdateParentId(&junior)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "success"})
 }
