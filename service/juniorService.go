@@ -1,7 +1,9 @@
 package service
 
 import (
+	"math/rand"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/we-we-Web/draw-lots-backend/model"
@@ -93,4 +95,31 @@ func (service *Service) GetJuniorById(c *gin.Context) {
 	}
 	junior.Password = "secret"
 	c.JSON(http.StatusOK, junior)
+}
+
+// MARK: - PickJunior -
+func (service *Service) PickJunior(c *gin.Context) {
+	juniors, err := service.juniorRepo.GetAllJuniors()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	openJuniors := []model.Junior{}
+	juniorList := *juniors
+	for _, junior := range juniorList {
+		if junior.ParentId == "" {
+			openJuniors = append(openJuniors, junior)
+		}
+	}
+
+	if len(openJuniors) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No available juniors found"})
+		return
+	}
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	randomJunior := openJuniors[r.Intn(len(openJuniors))]
+
+	randomJunior.Password = "secret"
+	c.JSON(http.StatusOK, randomJunior)
 }
