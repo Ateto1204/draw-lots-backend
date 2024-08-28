@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"math/rand"
 	"net/http"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/we-we-Web/draw-lots-backend/model"
 )
 
+// MARK: - CreateJunior -
 func (service *Service) CreateJunior(c *gin.Context) {
 	var junior model.Junior
 	if err := c.ShouldBindJSON(&junior); err != nil {
@@ -26,6 +28,7 @@ func (service *Service) CreateJunior(c *gin.Context) {
 	c.JSON(http.StatusOK, junior)
 }
 
+// MARK: - GetAllJuniors -
 func (service *Service) GetAllJuniors(c *gin.Context) {
 	juniors, err := service.juniorRepo.GetAllJuniors()
 	if err != nil {
@@ -35,6 +38,7 @@ func (service *Service) GetAllJuniors(c *gin.Context) {
 	c.JSON(http.StatusOK, juniors)
 }
 
+// MARK: - GetJunior -
 func (service *Service) GetJunior(id string) (*model.Junior, error) {
 	junior, err := service.juniorRepo.GetJunior(id)
 	if err != nil {
@@ -43,24 +47,31 @@ func (service *Service) GetJunior(id string) (*model.Junior, error) {
 	return junior, nil
 }
 
+// MARK: - AddParentIdToJunior -
 func (service *Service) AddParentIdToJunior(parentId, childId string) error {
 	junior, err := service.juniorRepo.GetJunior(childId)
 	if err != nil {
 		return err
 	}
 
+	if junior.ParentId != "" {
+		return errors.New("the junior already has partner")
+	}
+
 	junior.ParentId = parentId
-	if err := service.juniorRepo.UpdateParentId(junior); err != nil {
+	if err := service.juniorRepo.UpdateJunior(junior); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (service *Service) SetLineIdToJunior(c *gin.Context) {
+// MARK: - EditJunior -
+func (service *Service) EditJunior(c *gin.Context) {
 	type Request struct {
-		Id   string `json:"id"`
-		Pwd  string `json:"pwd"`
-		Line string `json:"line"`
+		Id        string `json:"id"`
+		Pwd       string `json:"pwd"`
+		Line      string `json:"line,omitempty"`
+		Instagram string `json:"ig,omitempty"`
 	}
 	var input Request
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -78,14 +89,16 @@ func (service *Service) SetLineIdToJunior(c *gin.Context) {
 		return
 	}
 
-	junior.LineId = input.Line
-	if err := service.juniorRepo.UpdateLineId(junior); err != nil {
+	junior.Line = input.Line
+	junior.Instagram = input.Instagram
+	if err := service.juniorRepo.UpdateJunior(junior); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, junior)
 }
 
+// MARK: - GetJuniorById -
 func (service *Service) GetJuniorById(c *gin.Context) {
 	id := c.Param("id")
 	junior, err := service.juniorRepo.GetJunior(id)

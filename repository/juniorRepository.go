@@ -37,14 +37,7 @@ func (repo *JuniorRepository) GetJunior(id string) (*model.Junior, error) {
 	return &junior, nil
 }
 
-func (repo *JuniorRepository) UpdateParentId(junior *model.Junior) error {
-	if err := repo.Database.Save(junior).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-func (repo *JuniorRepository) UpdateLineId(junior *model.Junior) error {
+func (repo *JuniorRepository) UpdateJunior(junior *model.Junior) error {
 	if err := repo.Database.Save(junior).Error; err != nil {
 		return err
 	}

@@ -31,10 +31,11 @@ func SetUpRouter(s *Service) *gin.Engine {
 
 	router.GET("/api/senior/:id", s.GetSeniorById)
 	router.GET("/api/senior/pick", s.PickSenior)
+	router.PUT("/api/senior/upd", s.EditSenior) // id, pwd, line, ig
 
 	router.GET("/api/junior/:id", s.GetJuniorById)
 	router.GET("/api/junior/pick", s.PickJunior)
-	router.PUT("/api/junior/line", s.SetLineIdToJunior) // id, pwd, line
+	router.PUT("/api/junior/upd", s.EditJunior) // id, pwd, line, ig
 
 	// router.POST("/api/admin", s.CreateAdmin)
 	// router.POST("/api/senior", s.CreateSenior)

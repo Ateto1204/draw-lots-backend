@@ -5,6 +5,7 @@ type Junior struct {
 	Name          string `json:"name"`
 	Password      string `json:"pwd"`
 	Class         string `json:"class"`
-	LineId        string `json:"line_id"`
-	ParentId      string `json:"parent_id"`
+	Line          string `json:"line"`
+	Instagram     string `json:"ig"`
+	ParentId      string `json:"parent"`
 }

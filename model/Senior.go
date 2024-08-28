@@ -11,9 +11,10 @@ type Senior struct {
 	Name          string      `json:"name"`
 	Password      string      `json:"pwd"`
 	Class         string      `json:"class"`
-	LineId        string      `json:"line_id"`
+	Line          string      `json:"line"`
+	Instagram     string      `json:"ig"`
 	Quota         int         `json:"quota"`
-	ChildrenId    StringArray `json:"children_id" gorm:"serializer:json" `
+	ChildrenId    StringArray `json:"children" gorm:"serializer:json" `
 }
 
 type StringArray []string
