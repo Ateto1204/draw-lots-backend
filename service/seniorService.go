@@ -10,6 +10,7 @@ import (
 	"github.com/we-we-Web/draw-lots-backend/model"
 )
 
+// MARK: - CreateSenior -
 func (service *Service) CreateSenior(c *gin.Context) {
 	var senior model.Senior
 	if err := c.ShouldBindJSON(&senior); err != nil {
@@ -27,6 +28,7 @@ func (service *Service) CreateSenior(c *gin.Context) {
 	c.JSON(http.StatusOK, senior)
 }
 
+// MARK: - GetAllSeniors -
 func (service *Service) GetAllSeniors(c *gin.Context) {
 	seniors, err := service.seniorRepo.GetAllSeniors()
 	if err != nil {
@@ -36,6 +38,7 @@ func (service *Service) GetAllSeniors(c *gin.Context) {
 	c.JSON(http.StatusOK, seniors)
 }
 
+// MARK: - GetSenior -
 func (service *Service) GetSenior(id string) (*model.Senior, error) {
 	senior, err := service.seniorRepo.GetSenior(id)
 	if err != nil {
@@ -44,6 +47,7 @@ func (service *Service) GetSenior(id string) (*model.Senior, error) {
 	return senior, nil
 }
 
+// MARK: - AddChildToSenior -
 func (service *Service) AddChildIdToSenior(parentId, childId string) error {
 	senior, err := service.seniorRepo.GetSenior(parentId)
 	if err != nil {
@@ -55,16 +59,17 @@ func (service *Service) AddChildIdToSenior(parentId, childId string) error {
 	}
 	for _, junior := range senior.ChildrenId {
 		if childId == junior {
-			return errors.New("the child has already exist")
+			return errors.New("the child has already existed")
 		}
 	}
 	senior.ChildrenId = *senior.ChildrenId.Append(childId)
-	if err := service.seniorRepo.UpdateChildId(senior); err != nil {
+	if err := service.seniorRepo.UpdateSenior(senior); err != nil {
 		return err
 	}
 	return nil
 }
 
+// MARK: - GetSeniorById -
 func (service *Service) GetSeniorById(c *gin.Context) {
 	id := c.Param("id")
 	senior, err := service.seniorRepo.GetSenior(id)
@@ -101,4 +106,37 @@ func (service *Service) PickSenior(c *gin.Context) {
 
 	randomSenior.Password = "secret"
 	c.JSON(http.StatusOK, randomSenior)
+}
+
+// MARK: - EditSenior -
+func (service *Service) EditSenior(c *gin.Context) {
+	type Request struct {
+		Id        string `json:"id"`
+		Pwd       string `json:"pwd"`
+		Line      string `json:"line,omitempty"`
+		Instagram string `json:"ig,omitempty"`
+	}
+	var input Request
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	senior, err := service.seniorRepo.GetSenior(input.Id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	if input.Pwd != senior.Password {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "password incorrect"})
+		return
+	}
+
+	senior.Line = input.Line
+	senior.Instagram = input.Instagram
+	if err := service.seniorRepo.UpdateSenior(senior); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, senior)
 }
