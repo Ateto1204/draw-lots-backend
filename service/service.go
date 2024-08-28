@@ -25,6 +25,7 @@ func NewService(adminRepo *repository.AdminRepository,
 	}
 }
 
+// MARK: - Login -
 func (service *Service) Login(c *gin.Context) {
 	type Login struct {
 		Identity string `json:"identity"`
@@ -77,6 +78,7 @@ func (service *Service) Login(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{"error": "invalid identity"})
 }
 
+// MARK: - CreateConnect -
 func (service *Service) CreateConnect(c *gin.Context) {
 	type Connect struct {
 		Id     string `json:"id"`
@@ -113,6 +115,7 @@ func (service *Service) CreateConnect(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "success"})
 }
 
+// MARK: - ClearConnection -
 func (service *Service) ClearConnection(c *gin.Context) {
 	type Request struct {
 		Id  string `json:"id"`
