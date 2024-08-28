@@ -14,6 +14,7 @@ type Service struct {
 	juniorRepo *repository.JuniorRepository
 }
 
+// MARK: - NewService -
 func NewService(adminRepo *repository.AdminRepository,
 	seniorRepo *repository.SeniorRepository,
 	juniorRepo *repository.JuniorRepository) *Service {
@@ -150,7 +151,7 @@ func (service *Service) ClearConnection(c *gin.Context) {
 	}
 
 	for _, senior := range seniorList {
-		err := service.seniorRepo.UpdateChildId(&senior)
+		err := service.seniorRepo.UpdateSenior(&senior)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -170,7 +171,7 @@ func (service *Service) ClearConnection(c *gin.Context) {
 	}
 
 	for _, junior := range juniorList {
-		err := service.juniorRepo.UpdateParentId(&junior)
+		err := service.juniorRepo.UpdateJunior(&junior)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
