@@ -2,38 +2,25 @@ package main
 
 import (
 	"log"
-	"os"
 
-	"github.com/we-we-Web/draw-lots-backend/model"
+	"github.com/we-we-Web/draw-lots-backend/db"
 	"github.com/we-we-Web/draw-lots-backend/repository"
 	"github.com/we-we-Web/draw-lots-backend/service"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 func main() {
 	// godotenv.Load()
 
-	dsn := os.Getenv("POSTGRES_URI")
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic("failed to connect database")
-	} else {
-		log.Println("Opened database successfully")
-	}
-	if err := db.AutoMigrate(&model.Admin{}, &model.Senior{}, &model.Junior{}); err != nil {
-		log.Fatalf("AutoMigrate failed: %v", err)
-	} else {
-		log.Println("Migrated database successfully")
-	}
+	database := db.InitDB()
+	rdb := db.InitRedis()
 
-	adminRepo := repository.NewAdminRepo(db)
-	seniorRepo := repository.NewSeniorRepo(db)
-	juniorRepo := repository.NewJuniorRepo(db)
+	adminRepo := repository.NewAdminRepo(database)
+	seniorRepo := repository.NewSeniorRepo(database, rdb)
+	juniorRepo := repository.NewJuniorRepo(database, rdb)
 	s := service.NewService(adminRepo, seniorRepo, juniorRepo)
 
 	router := service.SetUpRouter(s)
-	err = router.Run(":8080")
+	err := router.Run(":8080")
 	if err != nil {
 		log.Fatalf("failed to start server: %v", err)
 	}
