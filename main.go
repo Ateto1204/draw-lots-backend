@@ -3,20 +3,19 @@ package main
 import (
 	"log"
 
-	"github.com/joho/godotenv"
 	"github.com/we-we-Web/draw-lots-backend/db"
 	"github.com/we-we-Web/draw-lots-backend/repository"
 	"github.com/we-we-Web/draw-lots-backend/service"
 )
 
 func main() {
-	godotenv.Load()
+	// godotenv.Load()
 
 	database := db.InitDB()
-	// rdb := db.InitRedis()
+	rdb := db.InitRedis()
 
 	adminRepo := repository.NewAdminRepo(database)
-	seniorRepo := repository.NewSeniorRepo(database)
+	seniorRepo := repository.NewSeniorRepo(database, rdb)
 	juniorRepo := repository.NewJuniorRepo(database)
 	s := service.NewService(adminRepo, seniorRepo, juniorRepo)
 

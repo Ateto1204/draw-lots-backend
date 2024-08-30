@@ -3,20 +3,22 @@ package db
 import (
 	"context"
 	"log"
+	"os"
 
 	"github.com/go-redis/redis/v8"
 )
 
-var ctx = context.Background()
+var Ctx = context.Background()
 
 func InitRedis() *redis.Client {
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // No password set
-		DB:       0,  // Use default DB
-	})
+	opt, err := redis.ParseURL(os.Getenv("REDIS_URI"))
+	if err != nil {
+		log.Fatalf("failed to parse Redis connection URL: %v", err)
+	}
 
-	_, err := rdb.Ping(ctx).Result()
+	rdb := redis.NewClient(opt)
+
+	_, err = rdb.Ping(Ctx).Result()
 	if err != nil {
 		log.Fatalf("failed to connect to redis: %v", err)
 	}
