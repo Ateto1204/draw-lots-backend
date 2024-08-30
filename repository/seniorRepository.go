@@ -2,7 +2,6 @@ package repository
 
 import (
 	"encoding/json"
-	"errors"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/we-we-Web/draw-lots-backend/db"
@@ -64,9 +63,6 @@ func (repo *SeniorRepository) GetSenior(id string) (*model.Senior, error) {
 	if err := json.Unmarshal([]byte(val), &senior); err != nil {
 		return nil, err
 	}
-	if senior.ChildrenId == nil {
-		return nil, errors.New("omgomgomg")
-	}
 	return &senior, nil
 }
 
@@ -87,8 +83,7 @@ func (repo *SeniorRepository) UpdateSenior(senior *model.Senior) error {
 			return
 		}
 		id := senior.StudentNumber
-		repo.Cache.Set(db.Ctx, id, seniorJSON, 0)
-		errCh <- nil
+		errCh <- repo.Cache.Set(db.Ctx, id, seniorJSON, 0).Err()
 	}()
 	for i := 0; i < 2; i++ {
 		if err := <-errCh; err != nil {

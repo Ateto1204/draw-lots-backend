@@ -16,7 +16,7 @@ func main() {
 
 	adminRepo := repository.NewAdminRepo(database)
 	seniorRepo := repository.NewSeniorRepo(database, rdb)
-	juniorRepo := repository.NewJuniorRepo(database)
+	juniorRepo := repository.NewJuniorRepo(database, rdb)
 	s := service.NewService(adminRepo, seniorRepo, juniorRepo)
 
 	router := service.SetUpRouter(s)
