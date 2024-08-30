@@ -105,14 +105,22 @@ func (service *Service) CreateConnect(c *gin.Context) {
 	}
 
 	// Create connection
-	if err := service.AddChildIdToSenior(input.Parent, input.Child); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		return
+	errCh := make(chan error, 2)
+
+	go func() {
+		errCh <- service.AddChildIdToSenior(input.Parent, input.Child)
+	}()
+	go func() {
+		errCh <- service.AddParentIdToJunior(input.Parent, input.Child)
+	}()
+
+	for i := 0; i < 2; i++ {
+		if err := <-errCh; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
-	if err := service.AddParentIdToJunior(input.Parent, input.Child); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		return
-	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "success"})
 }
 
@@ -138,41 +146,60 @@ func (service *Service) ClearConnection(c *gin.Context) {
 		return
 	}
 
+	errCh := make(chan error, 2)
+
 	// Clear seniors
-	seniors, err := service.seniorRepo.GetAllSeniors()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	seniorList := *seniors
-	for i := range seniorList {
-		seniorList[i].ChildrenId = model.StringArray{}
-	}
-
-	for _, senior := range seniorList {
-		err := service.seniorRepo.UpdateSenior(&senior)
+	go func() {
+		seniors, err := service.seniorRepo.GetAllSeniors()
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			errCh <- err
 			return
 		}
-	}
+
+		seniorList := *seniors
+		for i := range seniorList {
+			go func(senior *model.Senior) {
+				senior.ChildrenId = model.StringArray{}
+				if err := service.seniorRepo.UpdateSenior(senior); err != nil {
+					errCh <- err
+					return
+				}
+			}(&seniorList[i])
+		}
+
+		for _, senior := range seniorList {
+			if err := service.seniorRepo.UpdateSenior(&senior); err != nil {
+				errCh <- err
+				return
+			}
+		}
+		errCh <- nil
+	}()
 
 	// Clear juniors
-	juniors, err := service.juniorRepo.GetAllJuniors()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	juniorList := *juniors
-	for i := range juniorList {
-		juniorList[i].ParentId = ""
-	}
-
-	for _, junior := range juniorList {
-		err := service.juniorRepo.UpdateJunior(&junior)
+	go func() {
+		juniors, err := service.juniorRepo.GetAllJuniors()
 		if err != nil {
+			errCh <- err
+			return
+		}
+
+		juniorList := *juniors
+		for i := range juniorList {
+			go func(junior *model.Junior) {
+				junior.ParentId = ""
+				if err := service.juniorRepo.UpdateJunior(junior); err != nil {
+					errCh <- err
+					return
+				}
+			}(&juniorList[i])
+		}
+
+		errCh <- nil
+	}()
+
+	for i := 0; i < 2; i++ {
+		if err := <-errCh; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
