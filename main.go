@@ -3,13 +3,14 @@ package main
 import (
 	"log"
 
+	"github.com/joho/godotenv"
 	"github.com/we-we-Web/draw-lots-backend/db"
 	"github.com/we-we-Web/draw-lots-backend/repository"
 	"github.com/we-we-Web/draw-lots-backend/service"
 )
 
 func main() {
-	// godotenv.Load()
+	godotenv.Load()
 
 	database := db.InitDB()
 	rdb := db.InitRedis()

@@ -124,6 +124,50 @@ func (service *Service) CreateConnect(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "success"})
 }
 
+// MARK: - CreateConnectByInvited -
+func (service *Service) CreateConnectByInvited(c *gin.Context) {
+	type Connect struct {
+		Parent string `json:"parent"`
+		Pwd    string `json:"pwd"`
+		Child  string `json:"child"`
+	}
+	var input Connect
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Authorized by senior
+	senior, err := service.seniorRepo.GetSenior(input.Parent)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	if input.Pwd != senior.Password {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "password incorrect"})
+		return
+	}
+
+	// Create connection
+	errCh := make(chan error, 2)
+
+	go func() {
+		errCh <- service.AddChildIdToSenior(input.Parent, input.Child)
+	}()
+	go func() {
+		errCh <- service.AddParentIdToJunior(input.Parent, input.Child)
+	}()
+
+	for i := 0; i < 2; i++ {
+		if err := <-errCh; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "success"})
+}
+
 // MARK: - ClearConnection -
 func (service *Service) ClearConnection(c *gin.Context) {
 	type Request struct {
