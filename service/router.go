@@ -23,9 +23,10 @@ func SetUpRouter(s *Service) *gin.Engine {
 		c.JSON(http.StatusOK, &Option{})
 	})
 
-	router.POST("/api/login", s.Login)          // identity, id, pwd
-	router.PUT("/api/connect", s.CreateConnect) // id, pwd, parent, child
-	router.PUT("/api/clear", s.ClearConnection) // id, pwd
+	router.POST("/api/login", s.Login)                   // identity, id, pwd
+	router.PUT("/api/connect", s.CreateConnect)          // id(admin), pwd, parent, child
+	router.PUT("api/connect2", s.CreateConnectByInvited) // parent, pwd, child
+	router.PUT("/api/clear", s.ClearConnection)          // id, pwd
 
 	router.POST("/api/admin", s.GetAdminById) // id, pwd
 
@@ -39,9 +40,9 @@ func SetUpRouter(s *Service) *gin.Engine {
 
 	// router.POST("/api/admin", s.CreateAdmin)
 	// router.POST("/api/senior", s.CreateSenior)
-	// router.POST("api/seniors", s.GetAllSeniors)
+	router.GET("api/seniors", s.GetAllSeniors)
 	// router.POST("/api/junior", s.CreateJunior)
-	// router.POST("/api/juniors", s.GetAllJuniors)
+	// router.GET("/api/juniors", s.GetAllJuniors)
 
 	return router
 }
