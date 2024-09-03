@@ -35,6 +35,9 @@ func (service *Service) GetAllJuniors(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	for i := range *juniors {
+		(*juniors)[i].Password = "secret"
+	}
 	c.JSON(http.StatusOK, juniors)
 }
 

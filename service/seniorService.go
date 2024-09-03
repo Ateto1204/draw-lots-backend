@@ -35,6 +35,9 @@ func (service *Service) GetAllSeniors(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	for i := range *seniors {
+		(*seniors)[i].Password = "secret"
+	}
 	c.JSON(http.StatusOK, seniors)
 }
 
@@ -56,6 +59,24 @@ func (service *Service) AddChildIdToSenior(parentId, childId string) error {
 
 	if len(senior.ChildrenId) >= senior.Quota {
 		return errors.New("the limit has been reached")
+	}
+	for _, junior := range senior.ChildrenId {
+		if childId == junior {
+			return errors.New("the child has already existed")
+		}
+	}
+	senior.ChildrenId = *senior.ChildrenId.Append(childId)
+	if err := service.seniorRepo.UpdateSenior(senior); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MARK: - AddChildToSeniorByInvite -
+func (service *Service) AddChildToSeniorByInvite(parentId, childId string) error {
+	senior, err := service.seniorRepo.GetSenior(parentId)
+	if err != nil {
+		return err
 	}
 	for _, junior := range senior.ChildrenId {
 		if childId == junior {

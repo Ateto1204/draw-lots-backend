@@ -152,7 +152,7 @@ func (service *Service) CreateConnectByInvited(c *gin.Context) {
 	errCh := make(chan error, 2)
 
 	go func() {
-		errCh <- service.AddChildIdToSenior(input.Parent, input.Child)
+		errCh <- service.AddChildToSeniorByInvite(input.Parent, input.Child)
 	}()
 	go func() {
 		errCh <- service.AddParentIdToJunior(input.Parent, input.Child)
